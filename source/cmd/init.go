@@ -4,6 +4,7 @@ import (
     "io/ioutil"
     "os"
 	"github.com/spf13/cobra"
+    "github.com/spf13/viper"
     log "github.com/sirupsen/logrus"
 )
 
@@ -63,17 +64,44 @@ func initTent(){
     }
 }
 
-var yamlExample = []byte(`systems:
-  - ubuntu:
+var yamlExample = []byte(`
+systems:
+  ubuntu:
     path: "/opt/chroot/ubuntu"
+    url: "https://"
     dist: ubuntu
     user: bresilla
-    group: ["storage", "video"]
+    groups:
+      - "storage"
+      - "video"
     xorg: true
-  - arch:
+  arch:
     path: "/opt/chroot/arch"
     dist: archlinux
+    url: "https://"
     user: bresilla
-    group: ["storage", "video"]
+    groups:
+      - "storage"
+      - "video"
     xorg: false
 `)
+
+type system struct {
+    name string
+    path string
+    url string
+    dist string
+    user string
+    groups []string
+    xorg bool
+}
+
+func getSystem(system *system){
+    system.name = subArg
+    system.path = viper.GetString("systems." + subArg + ".path")
+    system.url = viper.GetString("systems." + subArg + ".url")
+    system.dist = viper.GetString("systems." + subArg + ".dist")
+    system.user = viper.GetString("systems." + subArg + ".user")
+    system.groups = viper.GetStringSlice("systems." + subArg + ".groups")
+    system.xorg = viper.GetBool("systems." + subArg + ".xorg")
+}
