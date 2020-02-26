@@ -1,41 +1,56 @@
 package cmd
 
 import (
-	"fmt"
-
-	homedir "github.com/mitchellh/go-homedir"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+    "os"
+    "github.com/kyoh86/xdg"
+    "github.com/spf13/cobra"
+    "github.com/spf13/viper"
+    log "github.com/sirupsen/logrus"
 )
 
-var (
-	cfgFile     string
-	userLicense string
-	rootCmd = &cobra.Command{
-		Use:   "tent",
-		Short: "better chroot manager",
-	}
-)
+var name string = "tent"
+var cfgDir string = xdg.ConfigHome() + "/" + name;
+var cfgFile string
+var rootFlag bool = false
+
+type chroot struct {
+    name string
+    path string
+    url string
+    dist string
+    user string
+}
+
+var rootCmd = &cobra.Command{
+    Use:   "tent",
+    Short: "a better chroot/jail manager",
+}
 
 func Execute() error {
-	return rootCmd.Execute()
+    return rootCmd.Execute()
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
+    cobra.OnInitialize(initConfig)
+    rootCmd.PersistentFlags().StringVar(&cfgFile, "config", cfgDir + "/config.yml", "specify a config file")
 }
 
 func initConfig() {
-	if cfgFile != "" {
-		viper.SetConfigFile(cfgFile)
-	} else {
-		home, err := homedir.Dir()
-		if err != nil { fmt.Print(err) }
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".cobra")
-	}
-	viper.AutomaticEnv()
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
-	}
+    if cfgFile != "" {
+        viper.BindPFlag("config", rootCmd.Flags().Lookup("config"))
+        viper.SetConfigFile(cfgFile)
+    } else {
+        viper.AddConfigPath(cfgDir)
+        viper.SetConfigName("config.yml")
+        log.Info(cfgDir)
+    }
+    viper.SetConfigType("yaml")
+    viper.AutomaticEnv()
+    if os.Args[1] != "init" {
+        err := viper.ReadInConfig() // Find and read the config file
+        if err != nil { // Handle errors reading the config file
+            log.Error(err)
+            log.Error("use ", name, " init first\n")
+        }
+    }
 }
