@@ -1,8 +1,9 @@
 package main
 
 import (
-    "github.com/bresilla/tent/source/cmd")
+	"github.com/bresilla/tent/source/cmd"
+)
 
-func main(){
-    cmd.Execute()
+func main() {
+	cmd.Execute()
 }
