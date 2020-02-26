@@ -12,14 +12,8 @@ var name string = "tent"
 var cfgDir string = xdg.ConfigHome() + "/" + name;
 var cfgFile string
 var rootFlag bool = false
-
-type chroot struct {
-    name string
-    path string
-    url string
-    dist string
-    user string
-}
+var subArg string
+var selectSys system
 
 var rootCmd = &cobra.Command{
     Use:   "tent",
